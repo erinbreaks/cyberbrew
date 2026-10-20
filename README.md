@@ -1,6 +1,6 @@
 # ☕ CYBERBREW — The Full Café Ritual, Right at Your Desk
 
-> An immersive, art-directed digital café ambience website inspired by the concept of *imissmycafe.com*, crafted with intimate analog warmth, procedural Web Audio acoustic synthesis, rain simulations, a Pomodoro focus timer, and an analog café receipt generator.
+> An immersive, art-directed digital café ambience website , crafted with intimate analog warmth, procedural Web Audio acoustic synthesis, rain simulations, a Pomodoro focus timer, and an analog café receipt generator.
 
 ![Cyberbrew Preview](https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80)
 
