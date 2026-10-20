@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en" data-time="evening" data-weather="rainy" data-seating="window">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cyberbrew — The full cafe ritual, right at your desk. An immersive digital café ambience with rain, coffee sounds, focus timer, and calming soundscapes.">
+  <meta name="theme-color" content="#181210">
+  <title>Cyberbrew — The full cafe ritual, right at your desk.</title>
+
+  <!-- Google Fonts: Cormorant Garamond (Editorial Serif) & Plus Jakarta Sans (Clean Modern Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="cafe-body">
+
+  <!-- SVG Grain Texture Filter for Cinematic Analog Warmth -->
+  <svg class="svg-filters" aria-hidden="true" style="position: absolute; width: 0; height: 0; pointer-events: none;">
+    <filter id="film-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch" />
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0" />
+    </filter>
+  </svg>
+  <div class="film-grain-overlay" aria-hidden="true"></div>
+
+  <!-- Background Café Environment -->
+  <div class="cafe-environment" id="cafe-environment">
+    <!-- Sky / Distant City Background -->
+    <div class="env-sky" id="env-sky">
+      <div class="distant-citylights" id="distant-citylights"></div>
+    </div>
+
+    <!-- Window Pane with Rain Canvas -->
+    <div class="window-frame">
+      <canvas id="rain-canvas" class="rain-canvas" aria-hidden="true"></canvas>
+      <div class="window-glass-reflection"></div>
+      <div class="window-sill"></div>
+    </div>
+
+    <!-- Warm Ambient Pendant Lamp Glow -->
+    <div class="pendant-light-glow" id="pendant-glow" aria-hidden="true"></div>
+
+    <!-- Wooden Café Table Foreground -->
+    <div class="cafe-table">
+      <div class="table-surface">
+        <div class="table-grain-texture"></div>
+
+        <!-- Coffee Cup with Rising Steam -->
+        <div class="coffee-cup-container" id="coffee-cup" role="button" tabindex="0" aria-label="A warm ceramic cup of espresso. Click to take a sip." title="Click to take a sip ☕">
+          <canvas id="steam-canvas" class="steam-canvas" width="160" height="200" aria-hidden="true"></canvas>
+          <div class="coffee-cup">
+            <div class="cup-saucer"></div>
+            <div class="cup-body">
+              <div class="cup-rim">
+                <div class="coffee-liquid">
+                  <div class="coffee-crema"></div>
+                  <div class="cup-reflection"></div>
+                </div>
+              </div>
+            </div>
+            <div class="cup-handle"></div>
+          </div>
+          <div class="sip-tooltip" id="sip-tooltip">Sip taken ✨</div>
+        </div>
+
+        <!-- Handwritten Open Notebook -->
+        <div class="notebook-container" id="notebook-container" role="region" aria-label="Café notebook with mindful notes">
+          <div class="notebook-cover">
+            <div class="notebook-bookmark"></div>
+            <div class="notebook-page left-page">
+              <div class="page-header">
+                <span class="page-date" id="notebook-date">Today</span>
+                <span class="page-edition">cyberbrew journal</span>
+              </div>
+              <p class="handwritten-text" id="handwritten-quote">
+                “One thing at a time. One sip at a time.”
+              </p>
+              <div class="page-footer">
+                <button class="text-btn" id="next-quote-btn" title="Turn to another page">
+                  <span>turn page ↻</span>
+                </button>
+              </div>
+            </div>
+            <div class="notebook-page right-page">
+              <div class="quick-intention">
+                <label for="user-intention" class="intention-label">Your thought for this session:</label>
+                <textarea id="user-intention" class="intention-input" placeholder="What are you working on or savoring right now?..." rows="4"></textarea>
+                <span class="intention-saved-hint" id="intention-hint">saved locally ✍</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analog Brass Teaspoon & Coffee Beans -->
+        <div class="table-accents" aria-hidden="true">
+          <div class="coffee-beans-scatter">
+            <span class="bean bean-1"></span>
+            <span class="bean bean-2"></span>
+            <span class="bean bean-3"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Minimal Header & Navigation -->
+  <header class="cyber-header" id="cyber-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <a href="#cafe" class="brand-wordmark" aria-label="cyberbrew home">
+          <span class="wordmark-text">cyberbrew</span>
+          <span class="brand-dot"></span>
+        </a>
+        <span class="brand-tagline-sub">the full cafe ritual, right at your desk</span>
+      </div>
+
+      <nav class="nav-links" aria-label="Main Navigation">
+        <button class="nav-link-btn active" data-view="cafe" id="nav-btn-cafe">The Café</button>
+        <button class="nav-link-btn" data-panel="mixer" id="nav-btn-mixer">Soundscape</button>
+        <button class="nav-link-btn" data-panel="presets" id="nav-btn-presets">Presets</button>
+        <button class="nav-link-btn" data-panel="customize" id="nav-btn-customize">Atmosphere</button>
+        <button class="nav-link-btn" data-panel="focus" id="nav-btn-focus">Focus</button>
+        <button class="nav-link-btn" data-panel="receipt" id="nav-btn-receipt">Receipt</button>
+      </nav>
+
+      <div class="header-right">
+        <!-- Live Local Time -->
+        <div class="live-clock-badge" id="live-clock-badge" title="Your current local time">
+          <span class="clock-indicator"></span>
+          <span class="clock-digits" id="live-time-display">--:--</span>
+        </div>
+
+        <!-- Master Sound Status / Quick Play Button -->
+        <button class="master-sound-btn" id="master-sound-btn" aria-label="Toggle all café audio" title="Play / Pause Soundscape (Space)">
+          <svg class="audio-icon icon-play" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <svg class="audio-icon icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+          <span class="audio-btn-label" id="master-btn-label">Listen</span>
+        </button>
+
+        <!-- Zen / Hide UI Toggle -->
+        <button class="icon-toggle-btn" id="zen-toggle-btn" aria-label="Hide UI for pure ambience" title="Zen Mode: Hide interface (H)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Hero Overlay Screen (Intimate Introduction) -->
+  <section class="hero-intro-screen" id="hero-intro">
+    <div class="hero-card">
+      <span class="hero-eyebrow">A little digital sanctuary</span>
+      <h1 class="hero-headline">Somewhere, the coffee is still warm.</h1>
+      <p class="hero-tagline">The full cafe ritual, right at your desk.</p>
+      <p class="hero-subtext">
+        Rain on the windows. Coffee in the air. Your favorite corner of the world, whenever you need it.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-enter" id="enter-cafe-btn">
+          <span>Enter the café ↗</span>
+        </button>
+        <span class="hero-microcopy">Your little escape from the noise.</span>
+      </div>
+
+      <div class="hero-quick-presets">
+        <span class="quick-presets-label">Or jump straight into a mood:</span>
+        <div class="quick-preset-chips">
+          <button class="chip" data-quick-preset="window-seat">Rainy Window Seat</button>
+          <button class="chip" data-quick-preset="after-hours">After Hours Midnight</button>
+          <button class="chip" data-quick-preset="sunday-morning">Sunday Morning</button>
+          <button class="chip" data-quick-preset="study-table">Quiet Study Nook</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Floating Sound Mixer Panel -->
+  <aside class="side-panel sound-mixer-panel" id="sound-mixer-panel" aria-label="Café Sound Mixer" aria-hidden="true">
+    <div class="panel-header">
+      <div>
+        <span class="panel-eyebrow">Acoustic Atmosphere</span>
+        <h2 class="panel-title">Your café, your atmosphere.</h2>
+      </div>
+      <button class="panel-close-btn" data-close-panel="sound-mixer-panel" aria-label="Close sound mixer">&times;</button>
+    </div>
+
+    <div class="panel-body">
+      <!-- Master Controls Bar -->
+      <div class="master-control-strip">
+        <div class="master-label-group">
+          <span class="master-label">Master Volume</span>
+          <span class="master-percent" id="master-volume-value">75%</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" class="cyber-slider master-slider" id="master-volume-slider" min="0" max="100" value="75" aria-label="Master volume">
+          <button class="mute-toggle-btn" id="master-mute-btn" aria-label="Mute all sound" title="Mute/Unmute (M)">
+            <svg class="icon-speaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 8 Independent Audio Channels -->
+      <div class="sound-tracks-list" id="sound-tracks-list">
+        
+        <!-- Track 1: Rain -->
+        <div class="sound-track-card" data-channel="rain">
+          <div class="track-info">
+            <div class="track-icon-wrapper">🌧️</div>
+            <div class="track-titles">
+              <span class="track-name">Rain on Glass</span>
+              <span class="track-detail">Soft droplets sliding down the window pane</span>
+            </div>
+            <div class="track-meter" id="meter-rain" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-rain" min="0" max="100" value="65" aria-label="Rain volume">
+            <span class="track-vol-text" id="val-rain">65%</span>
+          </div>
+        </div>
+
+        <!-- Track 2: Espresso Machine -->
+        <div class="sound-track-card" data-channel="espresso">
+          <div class="track-info">
+            <div class="track-icon-wrapper">☕</div>
+            <div class="track-titles">
+              <span class="track-name">Espresso &amp; Cups</span>
+              <span class="track-detail">Steam wand hiss, coffee extraction, gentle clinks</span>
+            </div>
+            <div class="track-meter" id="meter-espresso" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-espresso" min="0" max="100" value="35" aria-label="Espresso machine volume">
+            <span class="track-vol-text" id="val-espresso">35%</span>
+          </div>
+        </div>
+
+        <!-- Track 3: Café Chatter -->
+        <div class="sound-track-card" data-channel="chatter">
+          <div class="track-info">
+            <div class="track-icon-wrapper">👥</div>
+            <div class="track-titles">
+              <span class="track-name">Quiet Café Chatter</span>
+              <span class="track-detail">Subdued distant conversation and ambient murmurs</span>
+            </div>
+            <div class="track-meter" id="meter-chatter" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-chatter" min="0" max="100" value="25" aria-label="Café chatter volume">
+            <span class="track-vol-text" id="val-chatter">25%</span>
+          </div>
+        </div>
+
+        <!-- Track 4: Vinyl Crackle -->
+        <div class="sound-track-card" data-channel="vinyl">
+          <div class="track-info">
+            <div class="track-icon-wrapper">💿</div>
+            <div class="track-titles">
+              <span class="track-name">Vinyl Crackle</span>
+              <span class="track-detail">Warm vintage needle friction, soft dust pops</span>
+            </div>
+            <div class="track-meter" id="meter-vinyl" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-vinyl" min="0" max="100" value="40" aria-label="Vinyl crackle volume">
+            <span class="track-vol-text" id="val-vinyl">40%</span>
+          </div>
+        </div>
+
+        <!-- Track 5: Soft Lo-Fi / Piano Music -->
+        <div class="sound-track-card" data-channel="music">
+          <div class="track-info">
+            <div class="track-icon-wrapper">🎹</div>
+            <div class="track-titles">
+              <span class="track-name">Soft Lo-Fi Chords</span>
+              <span class="track-detail">Gentle generative Rhodes electric piano chords</span>
+            </div>
+            <div class="track-meter" id="meter-music" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-music" min="0" max="100" value="50" aria-label="Lo-fi music volume">
+            <span class="track-vol-text" id="val-music">50%</span>
+          </div>
+        </div>
+
+        <!-- Track 6: Fireplace -->
+        <div class="sound-track-card" data-channel="fireplace">
+          <div class="track-info">
+            <div class="track-icon-wrapper">🪵</div>
+            <div class="track-titles">
+              <span class="track-name">Fireplace Hearth</span>
+              <span class="track-detail">Warm low rumble and glowing ember crackles</span>
+            </div>
+            <div class="track-meter" id="meter-fireplace" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-fireplace" min="0" max="100" value="0" aria-label="Fireplace volume">
+            <span class="track-vol-text" id="val-fireplace">0%</span>
+          </div>
+        </div>
+
+        <!-- Track 7: City Traffic -->
+        <div class="sound-track-card" data-channel="traffic">
+          <div class="track-info">
+            <div class="track-icon-wrapper">🚗</div>
+            <div class="track-titles">
+              <span class="track-name">Distant City Traffic</span>
+              <span class="track-detail">Subdued rain-slicked asphalt tire hum</span>
+            </div>
+            <div class="track-meter" id="meter-traffic" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-traffic" min="0" max="100" value="15" aria-label="City traffic volume">
+            <span class="track-vol-text" id="val-traffic">15%</span>
+          </div>
+        </div>
+
+        <!-- Track 8: Night Wind -->
+        <div class="sound-track-card" data-channel="wind">
+          <div class="track-info">
+            <div class="track-icon-wrapper">🍃</div>
+            <div class="track-titles">
+              <span class="track-name">Night Wind</span>
+              <span class="track-detail">Soft nocturnal gust against the exterior wall</span>
+            </div>
+            <div class="track-meter" id="meter-wind" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="track-controls">
+            <input type="range" class="cyber-slider track-slider" id="slider-wind" min="0" max="100" value="20" aria-label="Night wind volume">
+            <span class="track-vol-text" id="val-wind">20%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Curated Presets Drawer / Modal -->
+  <aside class="side-panel presets-panel" id="presets-panel" aria-label="Café Mood Presets" aria-hidden="true">
+    <div class="panel-header">
+      <div>
+        <span class="panel-eyebrow">Curated Moments</span>
+        <h2 class="panel-title">Café Mood Presets</h2>
+      </div>
+      <button class="panel-close-btn" data-close-panel="presets-panel" aria-label="Close presets">&times;</button>
+    </div>
+
+    <div class="panel-body">
+      <p class="panel-desc">Handcrafted acoustic mixes and environmental lighting designed for different times of thought.</p>
+
+      <div class="presets-editorial-list">
+        <!-- Preset 1 -->
+        <article class="preset-card active" data-preset="window-seat">
+          <div class="preset-card-header">
+            <span class="preset-num">01</span>
+            <div class="preset-badge">Rainy &amp; Intimate</div>
+          </div>
+          <h3 class="preset-name">The Window Seat</h3>
+          <p class="preset-quote">“A warm cup, a rainy window, and all the time in the world.”</p>
+          <div class="preset-tags">
+            <span>Rain 65%</span>
+            <span>Espresso 35%</span>
+            <span>Lo-Fi 50%</span>
+            <span>Vinyl 40%</span>
+          </div>
+          <button class="btn btn-sm btn-preset-apply">Apply Atmosphere</button>
+        </article>
+
+        <!-- Preset 2 -->
+        <article class="preset-card" data-preset="after-hours">
+          <div class="preset-card-header">
+            <span class="preset-num">02</span>
+            <div class="preset-badge">Nocturnal &amp; Deep</div>
+          </div>
+          <h3 class="preset-name">After Hours</h3>
+          <p class="preset-quote">“For the thoughts that only arrive after midnight.”</p>
+          <div class="preset-tags">
+            <span>Vinyl 65%</span>
+            <span>Lo-Fi 55%</span>
+            <span>Night Wind 40%</span>
+            <span>Hearth 25%</span>
+          </div>
+          <button class="btn btn-sm btn-preset-apply">Apply Atmosphere</button>
+        </article>
+
+        <!-- Preset 3 -->
+        <article class="preset-card" data-preset="sunday-morning">
+          <div class="preset-card-header">
+            <span class="preset-num">03</span>
+            <div class="preset-badge">Airy &amp; Gentle</div>
+          </div>
+          <h3 class="preset-name">Sunday Morning</h3>
+          <p class="preset-quote">“No rush. No plans. Just one more cup.”</p>
+          <div class="preset-tags">
+            <span>Espresso 60%</span>
+            <span>Chatter 45%</span>
+            <span>Lo-Fi 50%</span>
+            <span>Sunny Glow</span>
+          </div>
+          <button class="btn btn-sm btn-preset-apply">Apply Atmosphere</button>
+        </article>
+
+        <!-- Preset 4 -->
+        <article class="preset-card" data-preset="study-table">
+          <div class="preset-card-header">
+            <span class="preset-num">04</span>
+            <div class="preset-badge">Deep Focus</div>
+          </div>
+          <h3 class="preset-name">The Study Table</h3>
+          <p class="preset-quote">“Get comfortable. Let the rest of the world wait.”</p>
+          <div class="preset-tags">
+            <span>Rain 50%</span>
+            <span>Lo-Fi 60%</span>
+            <span>Vinyl 30%</span>
+            <span>Focus Mode</span>
+          </div>
+          <button class="btn btn-sm btn-preset-apply">Apply Atmosphere</button>
+        </article>
+
+        <!-- Preset 5 -->
+        <article class="preset-card" data-preset="somewhere-in-paris">
+          <div class="preset-card-header">
+            <span class="preset-num">05</span>
+            <div class="preset-badge">Cinematic &amp; Romantic</div>
+          </div>
+          <h3 class="preset-name">Somewhere in Paris</h3>
+          <p class="preset-quote">“A little daydream, somewhere across the world.”</p>
+          <div class="preset-tags">
+            <span>Lo-Fi 55%</span>
+            <span>Chatter 45%</span>
+            <span>Traffic 30%</span>
+            <span>Rain 20%</span>
+          </div>
+          <button class="btn btn-sm btn-preset-apply">Apply Atmosphere</button>
+        </article>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Atmosphere Customization Panel -->
+  <aside class="side-panel customize-panel" id="customize-panel" aria-label="Personalize Atmosphere" aria-hidden="true">
+    <div class="panel-header">
+      <div>
+        <span class="panel-eyebrow">Visual &amp; Spatial Setting</span>
+        <h2 class="panel-title">Personalize Your Café</h2>
+      </div>
+      <button class="panel-close-btn" data-close-panel="customize-panel" aria-label="Close customization">&times;</button>
+    </div>
+
+    <div class="panel-body">
+      <!-- Weather Selection -->
+      <div class="custom-group">
+        <label class="custom-group-label">Weather Outside</label>
+        <div class="pill-selector" id="weather-selector">
+          <button class="pill-btn active" data-weather="rainy">🌧️ Rainy</button>
+          <button class="pill-btn" data-weather="sunny">☀️ Sunny</button>
+          <button class="pill-btn" data-weather="cloudy">☁️ Overcast</button>
+          <button class="pill-btn" data-weather="snowy">❄️ Snowy</button>
+        </div>
+      </div>
+
+      <!-- Time of Day Selection -->
+      <div class="custom-group">
+        <label class="custom-group-label">Time of Day</label>
+        <div class="pill-selector" id="time-selector">
+          <button class="pill-btn" data-time="morning">🌅 Morning</button>
+          <button class="pill-btn" data-time="golden">🌇 Golden Hour</button>
+          <button class="pill-btn active" data-time="evening">🌌 Evening</button>
+          <button class="pill-btn" data-time="midnight">🌙 Midnight</button>
+        </div>
+      </div>
+
+      <!-- Music Mood -->
+      <div class="custom-group">
+        <label class="custom-group-label">Acoustic Style</label>
+        <div class="pill-selector" id="music-selector">
+          <button class="pill-btn active" data-music="lofi">🎹 Lo-Fi Chords</button>
+          <button class="pill-btn" data-music="piano">🎶 Soft Piano</button>
+          <button class="pill-btn" data-music="silence">🔇 No Music</button>
+        </div>
+      </div>
+
+      <!-- Seating -->
+      <div class="custom-group">
+        <label class="custom-group-label">Corner of Choice</label>
+        <div class="pill-selector" id="seating-selector">
+          <button class="pill-btn active" data-seating="window">🪟 Window Seat</button>
+          <button class="pill-btn" data-seating="booth">🛋️ Corner Booth</button>
+          <button class="pill-btn" data-seating="patio">🌿 Terrace</button>
+        </div>
+      </div>
+
+      <!-- Save My Setup Button -->
+      <div class="custom-save-strip">
+        <button class="btn btn-secondary btn-block" id="save-settings-btn">Save As My Default Setup</button>
+        <span class="custom-save-feedback" id="save-feedback">Preferences saved locally ✨</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Focus Mode (Stay Awhile) Panel -->
+  <aside class="side-panel focus-panel" id="focus-panel" aria-label="Café Focus Mode" aria-hidden="true">
+    <div class="panel-header">
+      <div>
+        <span class="panel-eyebrow">Mindful Work</span>
+        <h2 class="panel-title">Settle in &amp; stay awhile.</h2>
+      </div>
+      <button class="panel-close-btn" data-close-panel="focus-panel" aria-label="Close focus timer">&times;</button>
+    </div>
+
+    <div class="panel-body text-center">
+      <!-- Session Mode Pills -->
+      <div class="timer-mode-selector" id="timer-mode-selector">
+        <button class="timer-mode-btn active" data-duration="25" data-mode="focus">25m Focus</button>
+        <button class="timer-mode-btn" data-duration="5" data-mode="short-break">5m Break</button>
+        <button class="timer-mode-btn" data-duration="15" data-mode="long-break">15m Long Break</button>
+      </div>
+
+      <!-- Circular Countdown Timer -->
+      <div class="timer-display-wrapper">
+        <svg class="timer-circle-svg" viewBox="0 0 220 220">
+          <circle class="timer-bg-circle" cx="110" cy="110" r="98"></circle>
+          <circle class="timer-progress-circle" id="timer-progress" cx="110" cy="110" r="98"></circle>
+        </svg>
+        <div class="timer-digits-container">
+          <span class="timer-time" id="timer-time-display">25:00</span>
+          <span class="timer-status-sub" id="timer-status-sub">Ready to settle in</span>
+        </div>
+      </div>
+
+      <!-- Timer Action Buttons -->
+      <div class="timer-buttons">
+        <button class="btn btn-primary btn-timer-main" id="timer-start-btn">Start Session</button>
+        <button class="btn btn-secondary" id="timer-reset-btn">Reset</button>
+      </div>
+
+      <!-- Sessions Counter -->
+      <div class="focus-stats">
+        <div class="stat-pill">
+          <span class="stat-num" id="sessions-completed-num">0</span>
+          <span class="stat-lbl">sessions completed</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num" id="minutes-focused-num">0</span>
+          <span class="stat-lbl">minutes in flow</span>
+        </div>
+      </div>
+
+      <div class="focus-chime-toggle">
+        <label class="chime-checkbox-label">
+          <input type="checkbox" id="chime-toggle" checked>
+          <span>Gentle ceramic chime on completion</span>
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Digital Café Receipt Modal / Card -->
+  <div class="receipt-overlay" id="receipt-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="receipt-paper" id="receipt-paper">
+      <div class="receipt-jagged-top"></div>
+      
+      <div class="receipt-inner">
+        <button class="receipt-close" id="receipt-close-btn" aria-label="Close receipt">&times;</button>
+        
+        <div class="receipt-header">
+          <div class="receipt-logo">cyberbrew</div>
+          <div class="receipt-sub">THE FULL CAFE RITUAL, RIGHT AT YOUR DESK</div>
+          <div class="receipt-divider">================================</div>
+          <div class="receipt-meta">
+            <div>DATE: <span id="rec-date">2026-10-20</span></div>
+            <div>TIME: <span id="rec-time">22:30</span></div>
+            <div>SEAT: <span id="rec-seat">WINDOW TABLE #04</span></div>
+          </div>
+          <div class="receipt-divider">--------------------------------</div>
+        </div>
+
+        <div class="receipt-items">
+          <div class="rec-row">
+            <span>Atmosphere Preset</span>
+            <span id="rec-preset">The Window Seat</span>
+          </div>
+          <div class="rec-row">
+            <span>Weather Outside</span>
+            <span id="rec-weather">Rain on Glass</span>
+          </div>
+          <div class="rec-row">
+            <span>Lighting Mood</span>
+            <span id="rec-time-of-day">Evening Twilight</span>
+          </div>
+          <div class="rec-row">
+            <span>Time at Desk</span>
+            <span id="rec-elapsed">14 mins</span>
+          </div>
+          <div class="rec-row">
+            <span>Focus Completed</span>
+            <span id="rec-focus">1 session</span>
+          </div>
+        </div>
+
+        <div class="receipt-divider">================================</div>
+        <div class="receipt-total-row">
+          <span>PEACE OF MIND</span>
+          <span>PRICELESS</span>
+        </div>
+        <div class="receipt-divider">--------------------------------</div>
+
+        <div class="receipt-quote">
+          <p id="rec-quote">“You don’t have to figure everything out tonight.”</p>
+        </div>
+
+        <div class="receipt-barcode">
+          <div class="barcode-lines">||| | || |||| | ||| || ||| | |||| | |||</div>
+          <div class="barcode-sub">#CYBERBREW-CALM-2026</div>
+        </div>
+
+        <div class="receipt-footer">
+          Brewed for your own little corner of the world.
+        </div>
+      </div>
+
+      <div class="receipt-jagged-bottom"></div>
+    </div>
+  </div>
+
+  <!-- Zen Mode Floating Restore Button (Shown only when UI is hidden) -->
+  <button class="zen-restore-btn" id="zen-restore-btn" aria-label="Restore interface" title="Restore interface (H)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+    <span>show controls</span>
+  </button>
+
+  <!-- Ambient Audio Toast Alerts -->
+  <div class="cyber-toast" id="cyber-toast" role="status" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/audio-engine.js"></script>
+  <script src="js/rain-canvas.js"></script>
+  <script src="js/steam-canvas.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
